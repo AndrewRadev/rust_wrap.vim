@@ -1,0 +1,57 @@
+*rust_wrap.txt*	TODO
+
+==============================================================================
+CONTENTS                                        *rust_wrap*   *rust_wrap-contents*
+
+    Installation................................: |rust_wrap-installation|
+    Usage.......................................: |rust_wrap-usage|
+    Settings....................................: |rust_wrap-settings|
+    Internals...................................: |rust_wrap-internals|
+    Issues......................................: |rust_wrap-issues|
+
+
+==============================================================================
+INSTALLATION                                            *rust_wrap-installation*
+
+There are several ways to install the plugin. The recommended one is by using
+Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
+that case, you can clone the plugin's git repository like so:
+>
+    git clone https://github.com/AndrewRadev/rust_wrap.vim ~/.vim/bundle/rust_wrap
+<
+If your vim configuration is under git version control, you could also set up
+the repository as a submodule, which would allow you to update more easily.
+The command is (provided you're in ~/.vim):
+>
+    git submodule add https://github.com/AndrewRadev/rust_wrap.vim bundle/rust_wrap
+<
+
+Another way is to simply copy all the essential directories inside the ~/.vim
+directory: TODO list of directories
+
+
+==============================================================================
+USAGE                                                          *rust_wrap-usage*
+
+TODO
+
+
+==============================================================================
+SETTINGS                                                    *rust_wrap-settings*
+
+TODO
+
+
+==============================================================================
+INTERNALS                                                  *rust_wrap-internals*
+
+TODO
+
+==============================================================================
+ISSUES                                                        *rust_wrap-issues*
+
+Any issues and suggestions are very welcome on the github bugtracker:
+https://github.com/AndrewRadev/rust_wrap.vim/issues
+
+
+vim:tw=78:sw=4:ft=help:norl:
