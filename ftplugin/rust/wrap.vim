@@ -1,4 +1,5 @@
 let s:wrap_types = ['Result', 'Option', 'Rc']
+let s:line_end   = '\%(\s*\/\/.*\)\=$'
 
 command! -buffer -complete=customlist,s:WrapComplete -nargs=+
       \ Wrap call s:Wrap(<f-args>)
@@ -43,7 +44,7 @@ function! s:Wrap(type, ...)
 
     " Find start and end of function:
     let start_line = line('.')
-    call rust_wrap#SearchSkip('{$', skip_syntax, 'Wc')
+    call rust_wrap#SearchSkip('{'.s:line_end, skip_syntax, 'Wc')
     normal! %
     let end_line = line('.')
     exe start_line
@@ -52,7 +53,7 @@ function! s:Wrap(type, ...)
     while search('\<return\s\+.*;', 'W', end_line) > 0
       let syntax_group = synIDattr(synID(line('.'),col('.'),1),'name')
       if syntax_group == 'rustKeyword'
-        call rust_wrap#Keeppatterns('s/\%#return \zs.*\ze;/'.value_wrapper.'(\0)/')
+        call rust_wrap#Keeppatterns('s/\%#return \zs.*\ze;'.s:line_end.'/'.value_wrapper.'(\0)/')
       end
     endwhile
 
@@ -94,10 +95,10 @@ function! s:WrapExpression(first_lineno, last_lineno, wrapper)
     exe last_lineno
     normal! $
 
-    let else_pattern = '^\s*\zs}\s\+else\%(\s\+if\s\+.*\)\=\s\+{$'
-    let match_pattern = '\<match\s\+.*{$'
+    let else_pattern = '^\s*\zs}\s\+else\%(\s\+if\s\+.*\)\=\s\+{'.s:line_end
+    let match_pattern = '\<match\s\+.*{'.s:line_end
 
-    if rust_wrap#SearchSkip('}$', skip_syntax, 'Wbc', last_lineno) > 0
+    if rust_wrap#SearchSkip('}'.s:line_end, skip_syntax, 'Wbc', last_lineno) > 0
       " it's a block, find its opening
       normal! %
       let first_lineno = line('.')
@@ -130,10 +131,7 @@ function! s:WrapExpression(first_lineno, last_lineno, wrapper)
             call rust_wrap#PopCursor()
           else
             let body = rust_wrap#Trim(rust_wrap#GetMotion('vg_'))
-
-            " TODO (2020-05-06) trailing comments
-            let trailer = matchstr(body, ',$')
-            let body = substitute(body, ',$', '', '')
+            let [body, trailer] = s:ExtractPattern(body, ','.s:line_end)
             let body = wrapper.'('.body.')'
             call rust_wrap#ReplaceMotion('vg_', body . trailer)
           endif
@@ -163,7 +161,8 @@ function! s:WrapExpression(first_lineno, last_lineno, wrapper)
     endwhile
 
     let body = rust_wrap#Trim(join(getbufline('%', expr_start_lineno, last_lineno), "\n"))
-    let body = wrapper.'('.body.')'
+    let [body, trailer] = s:ExtractPattern(body, s:line_end)
+    let body = wrapper.'('.body.')'.trailer
     call rust_wrap#ReplaceLines(expr_start_lineno, last_lineno, body)
   finally
     call rust_wrap#PopCursor()
@@ -175,4 +174,16 @@ function! s:WrapComplete(argument_lead, _command_line, _cursor_position)
   call filter(types, {_, t -> t =~? a:argument_lead})
   call sort(types)
   return types
+endfunction
+
+function! s:ExtractPattern(line, pattern)
+  let line = a:line
+  let pattern = a:pattern
+
+  let match = matchstr(line, pattern)
+  if len(match) > 0
+    let line = substitute(line, pattern, '', '')
+  endif
+
+  return [line, match]
 endfunction

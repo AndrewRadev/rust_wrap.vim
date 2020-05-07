@@ -41,7 +41,7 @@ describe "Basic" do
     EOF
   end
 
-  specify "Wraps code in Rc" do
+  specify "wraps code in Rc" do
     set_file_contents <<~EOF
       fn example() -> u32 {
           return 0;
@@ -56,6 +56,25 @@ describe "Basic" do
       fn example() -> Rc<u32> {
           return Rc::new(0);
           Rc::new(42)
+      }
+    EOF
+  end
+
+  specify "preserves comments" do
+    set_file_contents <<~EOF
+      fn example() -> u32 {
+          return 0; // comment
+          42 // comment
+      }
+    EOF
+
+    vim.command('Wrap Rc')
+    vim.write
+
+    assert_file_contents <<~EOF
+      fn example() -> Rc<u32> {
+          return Rc::new(0); // comment
+          Rc::new(42) // comment
       }
     EOF
   end
